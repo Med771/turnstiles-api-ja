@@ -1,0 +1,39 @@
+spring:
+  application:
+    name: turnstiles-api-ja
+
+server:
+  address: 0.0.0.0
+  port: 8980
+
+app:
+  first-device-sn: 87cf2ca20058324942
+  second-device-sn: 87cf2ca20058324942
+
+  first-device-secret: 123456
+  second-device-secret: 123456
+
+  config:
+    port: 10010
+
+  decoder:
+    max-frame-length: 1048576
+    length-field-offset: 4
+    length-field-length: 4
+    length-adjustment: 0
+    initial-bytes-to-strip: 8
+
+logging:
+  level:
+    ru.ai.turnstilesapija: INFO
+    org.springframework: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+
