@@ -7,17 +7,17 @@ server:
   port: 8980
 
 app:
-  first-device-sn: 87cf2ca20058324942
-  second-device-sn: 87cf2ca20058324942
+  first-device-sn:
+  second-device-sn:
 
-  first-device-secret: 123456
-  second-device-secret: 123456
+  first-device-secret:
+  second-device-secret:
 
   config:
     port: 10010
 
   decoder:
-    max-frame-length: 1048576
+    max-frame-length: 2097152
     length-field-offset: 4
     length-field-length: 4
     length-adjustment: 0
