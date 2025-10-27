@@ -2,6 +2,7 @@ version: '3.9'
 
 services:
   gateway:
+    build: .
     container_name: gateway
     ports:
       - "8080:8080"
