@@ -17,19 +17,19 @@ public class StatusCnt {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @GetMapping(path = "taskStatus?taskId={taskId}")
-    public ResponseEntity<HttpStatus> taskStatus(@PathVariable String taskId) {
-        // TODO: check process
-        Optional<Boolean> isCompleted = Optional.of(Boolean.TRUE);
-
-        if (isCompleted.isPresent()) {
-            if (isCompleted.get()) {
-                return new ResponseEntity<>(HttpStatus.OK);
-            }
-
-            return new ResponseEntity<>(HttpStatus.ACCEPTED);
-        }
-
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(HttpStatus.NOT_FOUND);
-    }
+//    @GetMapping(path = "taskStatus?taskId={taskId}")
+//    public ResponseEntity<HttpStatus> taskStatus(@PathVariable String taskId) {
+//        // TODO: check process
+//        Optional<Boolean> isCompleted = Optional.of(Boolean.TRUE);
+//
+//        if (isCompleted.isPresent()) {
+//            if (isCompleted.get()) {
+//                return new ResponseEntity<>(HttpStatus.OK);
+//            }
+//
+//            return new ResponseEntity<>(HttpStatus.ACCEPTED);
+//        }
+//
+//        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(HttpStatus.NOT_FOUND);
+//    }
 }

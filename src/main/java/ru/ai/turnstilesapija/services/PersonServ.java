@@ -11,8 +11,6 @@ import ru.ai.turnstilesapija.dto.AddPersonReq;
 import ru.ai.turnstilesapija.dto.AddPersonRes;
 import ru.ai.turnstilesapija.manager.NettyRequestManager;
 import ru.ai.turnstilesapija.models.DeviceResponse;
-import ru.ai.turnstilesapija.models.PersionPosition;
-import ru.ai.turnstilesapija.models.RequestContext;
 import ru.ai.turnstilesapija.utils.ReqUtil;
 import ru.ai.turnstilesapija.utils.TermUtil;
 
@@ -35,7 +33,7 @@ public class PersonServ {
 
     private static final Logger logger = LoggerFactory.getLogger(PersonServ.class);
 
-    private void addPersonInTerminal(String deviceKey, String secret, AddPersonReq addPersonReq, String sn)
+    private boolean addPersonInTerminal(String deviceKey, String secret, AddPersonReq addPersonReq, String sn)
             throws ExecutionException, InterruptedException, TimeoutException {
 
         JSONObject addPersonJSON = reqUtil.createNewPerson(deviceKey, secret, addPersonReq.name(), addPersonReq.position(), sn);
@@ -43,27 +41,61 @@ public class PersonServ {
 
         Channel ch = termUtil.getDeviceChannel(deviceKey);
 
+        if (ch == null || !ch.isActive()) {
+            return false;
+
+            // throw new RuntimeException("Could not find channel for deviceKey: " + deviceKey);
+        }
+
         CompletableFuture<DeviceResponse> addPersonFuture = requestManager.sendRequest(ch, addPersonJSON);
 
-        DeviceResponse addPersonResp = addPersonFuture.get(10, TimeUnit.SECONDS);
+        DeviceResponse addPersonResp = addPersonFuture.get(5, TimeUnit.SECONDS);
+
+        if (!addPersonResp.getCode().equals("000")) {
+            if (addPersonResp.getCode().equals("100911")) {
+                return false;
+            }
+            else {
+                logger.info("Person add code {}, seqId {}", addPersonResp.getCode(), addPersonResp.getSeqId());
+
+                throw new RuntimeException("Person add code " + addPersonResp.getCode() + " " + addPersonResp.getSeqId());
+            }
+        }
 
         CompletableFuture<DeviceResponse> addFaceFuture = requestManager.sendRequest(ch, addFaceJSON);
 
-        DeviceResponse addFaceResp = addFaceFuture.get(10, TimeUnit.SECONDS);
+        DeviceResponse addFaceResp = addFaceFuture.get(5, TimeUnit.SECONDS);
+
+        logger.info("Face add code {}, seqId {}", addFaceResp.getCode(), addFaceResp.getSeqId());
+
+        return true;
     }
 
 
-    public void addPerson(AddPersonReq addPersonReq) {
-        UUID sn = UUID.randomUUID();
+    public AddPersonRes addPerson(AddPersonReq addPersonReq) {
+        String sn = addPersonReq.name().replaceAll(" ", "") + addPersonReq.position();
+
+        int status = 0;
 
         try {
-            addPersonInTerminal(termCfg.firstDeviceSN, termCfg.firstDeviceSecret, addPersonReq, sn.toString());
-            // addPersonInTerminal(termCfg.secondDeviceSN, termCfg.secondDeviceSecret, addPersonReq, sn.toString());
-        } catch (Exception e) {
-            logger.error("Failed to add person", e);
+            boolean flag = addPersonInTerminal(termCfg.firstDeviceSN, termCfg.firstDeviceSecret, addPersonReq, sn);
 
-            throw new RuntimeException(e);
+            if (flag) {status += 1;}
+
+        } catch (Exception e) {
+            logger.error("Failed to add person on first terminal {}", e.getMessage());
         }
+
+        try {
+            boolean flag = addPersonInTerminal(termCfg.secondDeviceSN, termCfg.secondDeviceSecret, addPersonReq, sn);
+
+            if (flag) {status += 2;}
+
+        } catch (Exception e) {
+            logger.error("Failed to add person on second terminal {}", e.getMessage());
+        }
+
+        return new AddPersonRes(status);
     }
 
     public void addBatchPersons(List<AddPersonReq> addBatchPersonReq) {

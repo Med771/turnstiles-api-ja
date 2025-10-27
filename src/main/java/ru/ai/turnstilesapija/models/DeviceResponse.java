@@ -14,6 +14,5 @@ import java.util.Map;
 public class DeviceResponse {
     private String cmd;
     private String seqId;
-    private String deviceKey;
-    private Map<String, Object> payload;
+    private String code;
 }

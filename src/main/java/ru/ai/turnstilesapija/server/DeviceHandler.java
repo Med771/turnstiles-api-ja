@@ -35,19 +35,13 @@ class DeviceHandler extends SimpleChannelInboundHandler<ByteBuf> {
         String json = msg.toString(CharsetUtil.UTF_8);
         JSONObject obj = JSON.parseObject(json);
 
-        for (String key : new String[] { "cmd", "seqId", "deviceKey" }) {
-            if (!obj.containsKey(key)) {
-                logger.warn("Received unknown {}: {}", key, json);
-
-                return;
-            }
-        }
-
         String cmd = obj.getString("cmd");
         String deviceKey = obj.getString("deviceKey");
         String seqId = obj.getString("seqId");
 
-        termUtil.updateLastSeen(deviceKey);
+        if (deviceKey != null) {
+            termUtil.updateLastSeen(deviceKey);
+        }
 
         if (Cmd.LOGIN.getCode().equals(cmd)) {
             boolean isLogin = termUtil.registerDeviceChannel(obj.getString("deviceKey"), ctx.channel());
@@ -66,18 +60,19 @@ class DeviceHandler extends SimpleChannelInboundHandler<ByteBuf> {
         }
 
         else if (Cmd.FACE_MERGE_RESP.getCode().equals(cmd)) {
-            requestManager.complete(seqId, new DeviceResponse(cmd, seqId, deviceKey, obj));
+            requestManager.complete(seqId, new DeviceResponse(cmd, seqId, obj.get("code").toString()));
 
             logger.info("Face merge completed. SeqId: {} RemoteAddress: {}", seqId, ctx.channel().remoteAddress());
         }
 
         else if (Cmd.PERSON_CREATE_RESP.getCode().equals(cmd)) {
-            requestManager.complete(seqId, new DeviceResponse(cmd, seqId, deviceKey, obj));
+            requestManager.complete(seqId, new DeviceResponse(cmd, seqId, obj.get("code").toString()));
 
             logger.info("Person create completed. SeqId: {} RemoteAddress: {}", seqId, ctx.channel().remoteAddress());
         }
-
-        logger.info("Received cmd={} from device={} payload={}", cmd, deviceKey, obj);
+        else {
+            logger.info("Received cmd={} from device={} payload={}", cmd, deviceKey, obj);
+        }
     }
 
     @Override
