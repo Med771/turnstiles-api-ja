@@ -5,7 +5,7 @@ services:
     build: .
     container_name: gateway
     ports:
-      - "8080:8080"
+      - "8980:8980"
     environment:
       - SPRING_CONFIG_LOCATION=file:/config/application.yml
     volumes:
